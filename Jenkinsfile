@@ -23,6 +23,7 @@ pipeline {
           script {
             echo "🧹 Cleaning up previous containers..."
             sh 'docker-compose -p $PROJECT_NAME -f docker-compose.yml down -v --remove-orphans || true'
+            sh 'docker rm -f $(docker ps -aq --filter name=server) || true'
             sh 'docker rm -f $(docker ps -aq --filter name=client) || true'
             sh 'docker rm -f $(docker ps -aq --filter name=mongodb) || true'
             sh 'docker system prune -af || true'
