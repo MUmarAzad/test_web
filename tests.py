@@ -51,19 +51,24 @@ class EcommerceE2ETests(unittest.TestCase):
             self.driver.get(BASE_URL)
             register_link = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Register')]")))
             register_link.click()
-            unique_email = f"testuser_{int(time.time())}@example.com"  # Unique email with timestamp
-            email_field = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".form-group input[type='email']")))
+            unique_email = f"testuser@example.com"
+            # Fill first name and last name fields
+            first_name_field = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".form-group input[name='firstName']")))
+            last_name_field = self.driver.find_element(By.CSS_SELECTOR, ".form-group input[name='lastName']")
+            email_field = self.driver.find_element(By.CSS_SELECTOR, ".form-group input[type='email']")
             password_field = self.driver.find_element(By.CSS_SELECTOR, ".form-group input[type='password']")
             register_button = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Register')]")
+            first_name_field.send_keys("Test")
+            last_name_field.send_keys("User")
             email_field.send_keys(unique_email)
-            password_field.send_keys(os.getenv("TEST_PASSWORD", "newpass123"))
+            password_field.send_keys(os.getenv("TEST_PASSWORD", "testuser123"))
             register_button.click()
             success_message = self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "success")))
             self.assertIn("successful", success_message.text.lower())
             print(f"✅ Test 3: User Registration - Passed with email {unique_email}")
             # Store credentials for next test
             self.registered_email = unique_email
-            self.registered_password = os.getenv("TEST_PASSWORD", "newpass123")
+            self.registered_password = os.getenv("TEST_PASSWORD", "testuser123")
         except (TimeoutException, NoSuchElementException, AssertionError, Exception) as e:
             print(f"❌ Test 3: User Registration - Failed due to {str(e)}")
             self.fail()
