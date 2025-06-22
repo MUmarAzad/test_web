@@ -44,14 +44,18 @@ def test_product_listing_accessibility():
 def test_login_success():
     """Test Case 3: Validate user login with correct credentials."""
     try:
-        driver.get(f"{BASE_URL}/login")
+        driver.get(BASE_URL)
+        login_link = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Login')]"))
+        )
+        login_link.click()
         email_field = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='email']")))
         password_field = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
         login_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Login')]")
-        email_field.send_keys("testuser@example.com")  # Replace with valid credentials
-        password_field.send_keys("password123")       # Replace with valid credentials
+        email_field.send_keys("umar.azad.work@gmail.com")
+        password_field.send_keys("Umar2004Azad")
         login_button.click()
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "h2")))  # Adjust if success page differs
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "h2")))
         print("✅ Test Case 3: Login Success - Passed")
     except TimeoutException:
         print("❌ Test Case 3: Login Success - Failed (Timeout)")
@@ -63,11 +67,15 @@ def test_login_success():
 def test_login_failure():
     """Test Case 4: Test login failure with invalid credentials."""
     try:
-        driver.get(f"{BASE_URL}/login")
+        driver.get(BASE_URL)
+        login_link = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Login')]"))
+        )
+        login_link.click()
         email_field = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='email']")))
         password_field = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
         login_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Login')]")
-        email_field.send_keys("invalid@example.com")
+        email_field.send_keys("umar.azad.work@gmail.com")
         password_field.send_keys("wrongpass")
         login_button.click()
         error_message = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "error")))
@@ -156,15 +164,20 @@ def test_checkout_initiation():
         print(f"❌ Test Case 8: Checkout Initiation - Failed due to {str(e)}")
 
 def test_user_registration():
-    """Test Case 9: Validate user registration form submission."""
+    """Test Case 9: Validate user registration form submission (avoiding deletion)."""
     try:
-        driver.get(f"{BASE_URL}/register")
+        driver.get(BASE_URL)
+        register_link = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Register')]"))
+        )
+        register_link.click()
         email_field = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='email']")))
         password_field = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
         register_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Register')]")
-        email_field.send_keys("newuser@example.com")
+        email_field.send_keys("testuser@gmail.com")  # Unique test email
         password_field.send_keys("newpass123")
         register_button.click()
+        # Check for success without assuming deletion
         success_message = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "success")))
         assert "successful" in success_message.text.lower()
         print("✅ Test Case 9: User Registration - Passed")
