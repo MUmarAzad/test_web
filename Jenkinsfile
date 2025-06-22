@@ -66,6 +66,7 @@ pipeline {
   post {
     always {
       archiveArtifacts artifacts: '**/selenium_test_output.log', allowEmptyArchive: true
+      sh 'cat tests/selenium_test_output.log || true'
 
       emailext(
         subject: "Jenkins Build: ${currentBuild.fullDisplayName}",
