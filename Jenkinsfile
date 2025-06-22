@@ -65,14 +65,12 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: '**/selenium_test_output.log', allowEmptyArchive: true
-      sh 'cat tests/selenium_test_output.log || true'
-
-      emailext(
-        subject: "Jenkins Build: ${currentBuild.fullDisplayName}",
-        body: "Build ${currentBuild.currentResult}: Check console output at ${env.BUILD_URL}",
-        to: "umar.azad.work@gmail.com"
-      )
+        emailext (
+        subject: "Jenkins Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: """<p>Build <b>${currentBuild.currentResult}</b>: ${env.BUILD_URL}</p>""",
+        to: "umar.azad.work@gmail.com",
+        mimeType: 'text/html'
+        )
     }
-  }
+    }
 }
