@@ -37,4 +37,4 @@ COPY . /tests
 WORKDIR /tests
 
 # Run tests
-CMD ["python", "selenium_tests.py"]
+CMD ["python", "tests.py"]
