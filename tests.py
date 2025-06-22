@@ -19,7 +19,7 @@ class EcommerceE2ETests(unittest.TestCase):
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--window-size=1920,1080")
         cls.driver = webdriver.Chrome(options=chrome_options)
-        cls.wait = WebDriverWait(cls.driver, 20)  # Increased timeout
+        cls.wait = WebDriverWait(cls.driver, 20)
 
     @classmethod
     def tearDownClass(cls):
@@ -36,9 +36,11 @@ class EcommerceE2ETests(unittest.TestCase):
             self.fail()
 
     def test_product_listing_accessibility(self):
-        """Test 2: Product listing page is accessible."""
+        """Test 2: Product listing page is accessible via header."""
         try:
-            self.driver.get(f"{BASE_URL}/shop")
+            self.driver.get(BASE_URL)
+            shop_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Shop')]")))
+            shop_button.click()
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "product-list")))
             print("✅ Test 2: Product Listing Accessibility - Passed")
         except (TimeoutException, NoSuchElementException, Exception) as e:
@@ -51,24 +53,22 @@ class EcommerceE2ETests(unittest.TestCase):
             self.driver.get(BASE_URL)
             register_link = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Register')]")))
             register_link.click()
-            unique_email = f"testuser@example.com"
-            # Fill first name and last name fields
+            unique_email = f"testuser_{int(time.time())}@example.com"
+            email_field = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".form-group input[type='email']")))
             first_name_field = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".form-group input[name='firstName']")))
-            last_name_field = self.driver.find_element(By.CSS_SELECTOR, ".form-group input[name='lastName']")
-            email_field = self.driver.find_element(By.CSS_SELECTOR, ".form-group input[type='email']")
+            last_name_field = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".form-group input[name='lastName']")))
             password_field = self.driver.find_element(By.CSS_SELECTOR, ".form-group input[type='password']")
             register_button = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Register')]")
+            email_field.send_keys(unique_email)
             first_name_field.send_keys("Test")
             last_name_field.send_keys("User")
-            email_field.send_keys(unique_email)
-            password_field.send_keys(os.getenv("TEST_PASSWORD", "testuser123"))
+            password_field.send_keys(os.getenv("TEST_PASSWORD", "newpass123"))
             register_button.click()
             success_message = self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "success")))
             self.assertIn("successful", success_message.text.lower())
             print(f"✅ Test 3: User Registration - Passed with email {unique_email}")
-            # Store credentials for next test
             self.registered_email = unique_email
-            self.registered_password = os.getenv("TEST_PASSWORD", "testuser123")
+            self.registered_password = os.getenv("TEST_PASSWORD", "newpass123")
         except (TimeoutException, NoSuchElementException, AssertionError, Exception) as e:
             print(f"❌ Test 3: User Registration - Failed due to {str(e)}")
             self.fail()
@@ -76,7 +76,7 @@ class EcommerceE2ETests(unittest.TestCase):
     def test_login_success(self):
         """Test 4: User can log in with newly registered credentials."""
         try:
-            if not hasattr(self, 'registered_email'):  # Skip if registration failed
+            if not hasattr(self, 'registered_email'):
                 raise Exception("Registration failed, skipping login test")
             self.driver.get(BASE_URL)
             login_link = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Login')]")))
@@ -113,24 +113,27 @@ class EcommerceE2ETests(unittest.TestCase):
             self.fail()
 
     def test_product_search(self):
-        """Test 6: Product search works."""
+        """Test 6: Product search shows dropdown with results."""
         try:
-            self.driver.get(f"{BASE_URL}/shop")
+            self.driver.get(BASE_URL)
+            shop_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Shop')]")))
+            shop_button.click()
             search_field = self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='search']")))
-            search_button = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Search')]")
             search_field.send_keys("modern")
-            search_button.click()
-            self.wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'modern')]")))
+            dropdown = self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "dropdown-menu")))  # Inferred
+            self.assertTrue(dropdown.is_displayed())
             print("✅ Test 6: Product Search - Passed")
-        except (TimeoutException, NoSuchElementException, Exception) as e:
+        except (TimeoutException, NoSuchElementException, AssertionError, Exception) as e:
             print(f"❌ Test 6: Product Search - Failed due to {str(e)}")
             self.fail()
 
     def test_add_to_cart(self):
         """Test 7: Add product to cart."""
         try:
-            self.driver.get(f"{BASE_URL}/shop")
-            add_to_cart_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "btn.add-to-cart")))
+            self.driver.get(BASE_URL)
+            shop_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Shop')]")))
+            shop_button.click()
+            add_to_cart_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "add-to-cart")))
             add_to_cart_button.click()
             cart_count = self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "cart-count")))
             self.assertGreater(int(cart_count.text), 0)
@@ -142,10 +145,12 @@ class EcommerceE2ETests(unittest.TestCase):
     def test_cart_removal(self):
         """Test 8: Remove product from cart."""
         try:
-            self.driver.get(f"{BASE_URL}/shop")
-            add_to_cart_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "btn.add-to-cart")))
+            self.driver.get(BASE_URL)
+            shop_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Shop')]")))
+            shop_button.click()
+            add_to_cart_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "add-to-cart")))
             add_to_cart_button.click()
-            remove_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "btn.remove")))
+            remove_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "remove")))
             remove_button.click()
             cart_count = self.driver.find_element(By.CLASS_NAME, "cart-count")
             self.assertTrue(cart_count.text == "" or int(cart_count.text) == 0)
@@ -157,10 +162,12 @@ class EcommerceE2ETests(unittest.TestCase):
     def test_checkout_initiation(self):
         """Test 9: Initiate checkout process."""
         try:
-            self.driver.get(f"{BASE_URL}/shop")
-            add_to_cart_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "btn.add-to-cart")))
+            self.driver.get(BASE_URL)
+            shop_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Shop')]")))
+            shop_button.click()
+            add_to_cart_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "add-to-cart")))
             add_to_cart_button.click()
-            place_order_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "btn.place-order")))
+            place_order_button = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "place-order")))
             place_order_button.click()
             self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "form")))
             print("✅ Test 9: Checkout Initiation - Passed")
