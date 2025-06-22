@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 
+
 # Set up Chrome options for headless mode
 chrome_options = Options()
 chrome_options.add_argument("--headless")
