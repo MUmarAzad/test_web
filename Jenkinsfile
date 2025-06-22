@@ -31,14 +31,19 @@ pipeline {
     }
 
     stage('Run Selenium Tests') {
-      steps {
-        dir('tests') {
-          script {
-            sh 'docker build -t selenium-tests .'
-            sh 'docker run --rm selenium-tests'
-          }
+        steps {
+            dir('tests') {
+            script {
+                echo '🔧 Building Selenium test container...'
+                sh 'docker build -t selenium-tests .'
+
+                echo '🚀 Running Selenium tests in container...'
+                sh 'docker run --rm selenium-tests || (echo "❌ Selenium tests failed!" && exit 1)'
+                
+                echo '✅ Selenium tests completed.'
+            }
+            }
         }
-      }
     }
   }
 
