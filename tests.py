@@ -202,7 +202,6 @@ def test_footer_links():
     except Exception as e:
         print(f"❌ Test Case 10: Footer Links - Failed due to {str(e)}")
 
-# Run all test cases
 if __name__ == "__main__":
     test_cases = [
         test_homepage_loads,
