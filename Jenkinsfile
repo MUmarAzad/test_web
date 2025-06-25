@@ -12,7 +12,7 @@ pipeline {
           git branch: 'main', url: 'https://github.com/MUmarAzad/mern-ecommerce-1.git'
         }
         dir('tests') {
-          git branch: 'main', url: 'https://github.com/MUmarAzad/test_web.git'  // Separate repo for tests
+          git branch: 'main', url: 'https://github.com/MUmarAzad/test_web.git'
         }
       }
     }
